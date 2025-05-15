@@ -1,6 +1,13 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
-
+import { AuthGuard } from '@nestjs/passport';
 @Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -13,5 +20,15 @@ export class AuthController {
   @Post('singup')
   singup(@Body() body: { username: string; password: string }) {
     return this.authService.signup(body.username, body.password);
+  }
+
+  @Post('login')
+  async login(@Body() body: { username: string; password: string }) {
+    return this.authService.login(body.username, body.password);
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Get('me')
+  getMe(@Request() req) {
+    return req.user;
   }
 }
