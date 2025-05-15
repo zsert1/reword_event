@@ -25,8 +25,11 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() body: { username: string; password: string }) {
-    return this.authService.login(body.username, body.password);
+  async login(
+    @Body() body: { username: string; password: string },
+    @Request() req,
+  ) {
+    return this.authService.login(body.username, body.password, req);
   }
   @UseGuards(AuthGuard('jwt'))
   @Get('me')
@@ -38,6 +41,12 @@ export class AuthController {
   @Roles('ADMIN')
   @Get('admin-only')
   getAdminOnly(@Request() req) {
+    return req.user;
+  }
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('USER')
+  @Get('user-only')
+  getUserOnly(@Request() req) {
     return req.user;
   }
 }

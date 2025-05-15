@@ -8,11 +8,17 @@ import { User, UserDocument } from '../user/schemas/user.schema';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-
+import {
+  LoginHistory,
+  LoginHistoryDocument,
+} from 'src/loginHistory/schemas/loginHistory.schema';
+import { Request } from 'express';
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(LoginHistory.name)
+    private loginHistoryModel: Model<LoginHistoryDocument>,
     private jwtService: JwtService,
   ) {}
 
@@ -25,11 +31,16 @@ export class AuthService {
     return user.save();
   }
 
-  async login(username: string, password: string) {
+  async login(username: string, password: string, req: Request) {
     const user = await this.userModel.findOne({ username });
     if (!user) throw new UnauthorizedException('올바른 정보가 아닙니다.');
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) throw new UnauthorizedException('올바른 정보가 아닙니다.');
+    await this.loginHistoryModel.create({
+      userId: user._id.toString(),
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
     const payload = {
       sub: user._id,
       username: user.username,
