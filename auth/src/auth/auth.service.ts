@@ -25,10 +25,8 @@ export class AuthService {
   async signup(username: string, password: string) {
     const existing = await this.userModel.findOne({ username });
     if (existing) throw new ConflictException('이미 존재하는 유저명입니다.');
-
     const hashed = await bcrypt.hash(password, 10);
-    const user = new this.userModel({ username, password: hashed });
-    return user.save();
+    return this.userModel.create({ username, password: hashed });
   }
 
   async login(username: string, password: string, req: Request) {
