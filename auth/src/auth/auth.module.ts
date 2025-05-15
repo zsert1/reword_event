@@ -6,6 +6,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '../user/schemas/user.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
+// import { APP_GUARD } from '@nestjs/core';
+// import { RolesGuard } from 'src/roles.guard';
 @Module({
   imports: [
     MongooseModule.forRoot('mongodb://mongodb:27017/auth_db'),

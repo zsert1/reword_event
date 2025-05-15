@@ -8,6 +8,8 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
+import { Roles } from 'src/roles.decorator';
+import { RolesGuard } from 'src/roles.guard';
 @Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -29,6 +31,13 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @Get('me')
   getMe(@Request() req) {
+    return req.user;
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN')
+  @Get('admin-only')
+  getAdminOnly(@Request() req) {
     return req.user;
   }
 }
