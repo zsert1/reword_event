@@ -1,3 +1,5 @@
+# 🧱 Auth 서버 
+
 | 기능              | 설명                                           |
 | --------------- | -------------------------------------------- |
 | **유저 등록**       | username + password로 회원가입(0)                    |
@@ -8,7 +10,49 @@
 | **테스트 코드 작성**   | 회원가입, 로그인, Role 가드 테스트 (0)      |
 
 
-# 🛡️ Auth 서버 API 명세서
+## 🔐 Auth 서버 스키마 구조
+
+### 👤 User (유저)
+
+| 필드명      | 타입      | 설명 |
+|-------------|-----------|------|
+| `_id`        | ObjectId   | MongoDB 자동 생성 ID |
+| `username`   | string     | 유저명 (중복 불가) |
+| `password`   | string     | bcrypt로 암호화된 비밀번호 |
+| `roles`      | string[]   | 역할 목록 (`USER`, `OPERATOR`, `AUDITOR`, `ADMIN`) |
+| `createdAt`  | Date       | 생성일 (자동) |
+| `updatedAt`  | Date       | 수정일 (자동) |
+
+#### 🎭 역할(Role) 종류
+
+| 역할명     | 설명 |
+|------------|------|
+| `USER`     | 기본 권한. 보상 요청 가능 |
+| `OPERATOR` | 이벤트 및 보상 등록 가능 |
+| `AUDITOR`  | 모든 보상 요청 이력 조회 가능 |
+| `ADMIN`    | 모든 기능 접근 가능 |
+
+---
+
+### 📜 LoginHistory (로그인 이력)
+
+| 필드명       | 타입      | 설명 |
+|--------------|-----------|------|
+| `_id`         | ObjectId   | MongoDB 자동 생성 ID |
+| `userId`      | string     | 로그인한 유저 ID |
+| `ip`          | string     | 로그인 요청 IP 주소 |
+| `userAgent`   | string     | 로그인 시 클라이언트 정보 |
+| `createdAt`   | Date       | 로그인 시각 |
+| `updatedAt`   | Date       | 수정 시각 (자동) |
+
+#### 🧭 사용 목적
+
+- 연속 출석 이벤트 처리
+- 누적 로그인 횟수 계산
+- 특정 기간 내 로그인 여부 체크
+
+
+## 🛡️ Auth 서버 API 명세서
 
 NestJS + JWT 기반 인증 및 권한 관리 기능을 제공합니다.
 
