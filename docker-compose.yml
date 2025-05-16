@@ -1,18 +1,21 @@
-version: '3.8'
+version: "3.8"
+
 services:
   mongodb:
     image: mongo
     container_name: mongodb
     ports:
-      - '27017:27017'
+      - "27017:27017"
     volumes:
       - mongo_data:/data/db
+    command: >
+      mongod --replSet rs0 --bind_ip_all
 
   auth:
     build: ./auth
     container_name: auth
     ports:
-      - '3001:3001'
+      - "3001:3001"
     environment:
       - MONGO_URI=mongodb://mongodb:27017/auth_db
     depends_on:
@@ -22,7 +25,7 @@ services:
     build: ./event
     container_name: event
     ports:
-      - '3002:3002'
+      - "3002:3002"
     environment:
       - MONGO_URI=mongodb://mongodb:27017/event_db
     depends_on:
@@ -32,7 +35,7 @@ services:
     build: ./gateway
     container_name: gateway
     ports:
-      - '3000:3000'
+      - "3000:3000"
     depends_on:
       - auth
       - event
