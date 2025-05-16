@@ -51,7 +51,7 @@ describe('AuthService', () => {
   describe('signup', () => {
     it('should create a new user if not exists', async () => {
       userModel.findOne.mockResolvedValue(null);
-      userModel.create.mockResolvedValue({ username: 'test' }); // ✅ 추가
+      userModel.create.mockResolvedValue({ username: 'test' });
 
       const result = await service.signup('test', 'pass');
       expect(result.username).toBe('test');
@@ -73,17 +73,17 @@ describe('AuthService', () => {
         _id: 'user123',
         username: 'test',
         password: hashed,
-        roles: ['USER'],
+        role: 'USER',
       });
 
-      jest.spyOn(jwtService, 'sign').mockReturnValue('mock.jwt.token'); // ✅ 추가
+      jest.spyOn(jwtService, 'sign').mockReturnValue('mock.jwt.token');
 
       const result = await service.login('test', 'pass', {
         ip: '127.0.0.1',
         headers: { 'user-agent': 'jest-agent' },
       } as any);
 
-      expect(result.accessToken).toBe('mock.jwt.token'); // ✅ mock 기준 검증
+      expect(result.accessToken).toBe('mock.jwt.token');
       expect(historyModel.create).toHaveBeenCalledWith({
         userId: 'user123',
         ip: '127.0.0.1',
@@ -104,7 +104,7 @@ describe('AuthService', () => {
         _id: 'user123',
         username: 'test',
         password: hashed,
-        roles: ['USER'],
+        role: 'USER',
       });
 
       await expect(

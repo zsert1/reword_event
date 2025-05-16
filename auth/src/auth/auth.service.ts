@@ -2,6 +2,7 @@ import {
   Injectable,
   ConflictException,
   UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from '../user/schemas/user.schema';
@@ -73,5 +74,15 @@ export class AuthService {
       { $set: { isActive: false } },
     );
     return { success: result.modifiedCount > 0 };
+  }
+  async getMyInfo(userId: string) {
+    const user = await this.userModel.findById(userId).select('username role');
+    if (!user) throw new NotFoundException('유저를 찾을 수 없습니다.');
+
+    return {
+      userId: user._id,
+      username: user.username,
+      role: user.role,
+    };
   }
 }

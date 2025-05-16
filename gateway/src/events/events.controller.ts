@@ -10,17 +10,17 @@ import {
 } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { AuthGuard } from '@nestjs/passport';
-import { Roles } from '../auth/roles.decorator';
-import { RolesGuard } from '../auth/roles.guard';
+import { Role } from '../auth/role.decorator';
+import { RoleGuard } from '../auth/role.guard';
 import { firstValueFrom } from 'rxjs';
 
 @Controller('events')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(AuthGuard('jwt'), RoleGuard)
 export class EventsController {
   constructor(private readonly httpService: HttpService) {}
 
   @Post()
-  @Roles('OPERATOR', 'ADMIN')
+  @Role('OPERATOR', 'ADMIN')
   async createEvent(@Body() body, @Request() req) {
     const response$ = this.httpService.post(
       'http://localhost:3002/events',

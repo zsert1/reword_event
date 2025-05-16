@@ -1,4 +1,3 @@
-// src/auth/roles.guard.ts
 import {
   Injectable,
   CanActivate,
@@ -6,10 +5,10 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ROLES_KEY } from './roles.decorator';
+import { ROLES_KEY } from './role.decorator';
 
 @Injectable()
-export class RolesGuard implements CanActivate {
+export class RoleGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
@@ -22,7 +21,7 @@ export class RolesGuard implements CanActivate {
     const { user } = context.switchToHttp().getRequest();
     if (!user) throw new ForbiddenException('인증되지 않은 사용자입니다.');
 
-    const hasRole = requiredRoles.some((role) => user.roles?.includes(role));
+    const hasRole = requiredRoles.includes(user.role);
     if (!hasRole) throw new ForbiddenException('권한이 없습니다.');
 
     return true;

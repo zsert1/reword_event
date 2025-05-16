@@ -4,7 +4,7 @@
 | ---------------- | -------- | ------------------- | -------------------------- |
 | 회원가입         | `POST`   | `/auth/signup`      | ❌ 공개                    |
 | 로그인           | `POST`   | `/auth/login`       | ❌ 공개                    |
-| 내 정보 조회     | `GET`    | `/auth/me`          | ✅ 로그인 유저             |
+| 내 정보 조회     | `GET`    | `/auth/user/:id`    | ✅ 로그인 유저             |
 | 유저 역할 변경   | `PATCH`  | `/auth/updateroles` | ✅ ADMIN                   |
 | 유저 목록 조회   | `GET`    | `/auth/users`       | ✅ ADMIN                   |
 | (선택) 유저 삭제 | `DELETE` | `/auth/:userId`     | ✅ ADMIN                   |
@@ -127,13 +127,9 @@ NestJS + JWT 기반 인증 및 권한 관리 기능을 제공합니다.
 
 ## ✅ 내 정보 조회
 
-- **URL**: `GET /auth/me`
+- **URL**: `GET /user/:id`
 - **인증 필요**: ✅ Yes
 - **Header**:
-
-```
-Authorization: Bearer <accessToken>
-```
 
 ### 성공 응답 (200 OK):
 

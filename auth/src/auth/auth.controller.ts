@@ -14,8 +14,8 @@ import { AuthService } from './auth.service';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('singup')
-  singup(@Body() body: { username: string; password: string }) {
+  @Post('signup')
+  signup(@Body() body: { username: string; password: string }) {
     return this.authService.signup(body.username, body.password);
   }
 
@@ -26,9 +26,9 @@ export class AuthController {
   ) {
     return this.authService.login(body.username, body.password, req);
   }
-  @Get('me')
-  getMe(@Request() req) {
-    return req.user;
+  @Get('user/:id')
+  async getUser(@Param('id') id: string) {
+    return this.authService.getMyInfo(id);
   }
 
   @Post('admin')
