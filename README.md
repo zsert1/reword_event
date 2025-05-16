@@ -115,3 +115,24 @@ rs.status();
 ```
 
 로 표시되면 정상입니다.
+
+## 🧑‍💼 초기 계정 정보 (Seeded Users)
+
+`docker-compose up --build` 실행 시, 다음과 같은 계정들이 자동으로 생성됩니다.
+
+| 역할 (Role)        | 이메일                                     | 비밀번호       |
+| ------------------ | ------------------------------------------ | -------------- |
+| 관리자 (ADMIN)     | `admin@example.com`                        | `admin1234`    |
+| 운영자 (OPERATOR)  | `operator@example.com`                     | `operator1234` |
+| 감사자 (AUDITOR)   | `auditor@example.com`                      | `auditor1234`  |
+| 일반 사용자 (USER) | `user1@example.com` ~ `user10@example.com` | `user1234`     |
+
+> 🛡️ 비밀번호는 bcrypt로 해싱되어 저장되며, JWT 로그인 테스트 시 사용 가능합니다.
+
+---
+
+## 📂 서버뱔 문서
+
+- 🔐 [Auth 서버 README](./auth/README.md)
+- 🎯 [Event 서버 README](./event/README.md)
+- 🛡️ [Gateway 서버 README](./gateway/README.md)
