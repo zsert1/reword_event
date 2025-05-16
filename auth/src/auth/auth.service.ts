@@ -42,12 +42,36 @@ export class AuthService {
     const payload = {
       sub: user._id,
       username: user.username,
-      roles: user.roles,
+      role: user.role,
     };
     const accessToken = this.jwtService.sign(payload);
     return { accessToken };
   }
-  getHello(): string {
-    return 'Hello World!';
+  // 관리자 계정 생성
+  async createAdmin(username: string, password: string) {
+    const existing = await this.userModel.findOne({ username });
+    if (existing) throw new ConflictException('이미 존재하는 관리자명입니다.');
+
+    const hashed = await bcrypt.hash(password, 10);
+    return this.userModel.create({
+      username,
+      password: hashed,
+      role: 'ADMIN',
+    });
+  }
+  async updateRoles(userId: string, role: string) {
+    const result = await this.userModel.updateOne(
+      { _id: userId },
+      { $set: { role } },
+    );
+    return { success: result.modifiedCount > 0 };
+  }
+
+  async deleteUser(userId: string) {
+    const result = await this.userModel.updateOne(
+      { _id: userId },
+      { $set: { isActive: false } },
+    );
+    return { success: result.modifiedCount > 0 };
   }
 }

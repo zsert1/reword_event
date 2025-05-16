@@ -1,14 +1,18 @@
-import { Body, Controller, Get, Post, Request } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Request,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
-  @Get()
-  getHello(): string {
-    return this.authService.getHello();
-  }
 
   @Post('singup')
   singup(@Body() body: { username: string; password: string }) {
@@ -26,16 +30,19 @@ export class AuthController {
   getMe(@Request() req) {
     return req.user;
   }
-  // @UseGuards(AuthGuard('jwt'), RolesGuard)
-  // @Roles('ADMIN')
-  // @Get('admin-only')
-  // getAdminOnly(@Request() req) {
-  //   return req.user;
-  // }
-  // @UseGuards(AuthGuard('jwt'), RolesGuard)
-  // @Roles('USER')
-  // @Get('user-only')
-  // getUserOnly(@Request() req) {
-  //   return req.user;
-  // }
+
+  @Post('admin')
+  createAdmin(@Body() body: { username: string; password: string }) {
+    return this.authService.createAdmin(body.username, body.password);
+  }
+
+  @Patch('updateroles')
+  updateRoles(@Body() body: { userId: string; role: string }) {
+    return this.authService.updateRoles(body.userId, body.role);
+  }
+
+  @Delete(':id')
+  deleteUser(@Param('id') id: string) {
+    return this.authService.deleteUser(id);
+  }
 }

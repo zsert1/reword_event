@@ -13,8 +13,10 @@ export class User {
   @Prop({ required: true })
   password: string;
 
-  @Prop({ type: [String], default: ['USER'] })
-  roles: Role[];
+  @Prop({ type: String, default: 'USER' })
+  role: Role;
+  @Prop({ default: true })
+  isActive: boolean; // ✅ 논리 삭제용
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
