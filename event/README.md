@@ -1,13 +1,13 @@
 # 🧱 Event 서버
 
-| 기능                | 메서드 | 경로               | 권한               |
-| ------------------- | ------ | ------------------ | ------------------ |
-| 이벤트 등록         | `POST` | `/events`          | ✅ OPERATOR, ADMIN |
-| 이벤트 목록 조회    | `GET`  | `/events`          | ✅ 로그인 유저     |
-| 이벤트 상세 조회    | `GET`  | `/events/:id`      | ✅ 로그인 유저     |
-| 보상 신청           | `POST` | `/rewards/claim`   | ✅ USER            |
-| 내 보상 이력 조회   | `GET`  | `/rewards/history` | ✅ USER            |
-| 전체 보상 이력 조회 | `GET`  | `/rewards/logs`    | ✅ AUDITOR, ADMIN  |
+| 기능                | 메서드 | 경로                   | 권한               |
+| ------------------- | ------ | ---------------------- | ------------------ |
+| 이벤트 등록         | `POST` | `event/register/event` | ✅ OPERATOR, ADMIN |
+| 이벤트 목록 조회    | `GET`  | `/events`              | ✅ 로그인 유저     |
+| 이벤트 상세 조회    | `GET`  | `/events/:id`          | ✅ 로그인 유저     |
+| 보상 신청           | `POST` | `/rewards/claim`       | ✅ USER            |
+| 내 보상 이력 조회   | `GET`  | `/rewards/history`     | ✅ USER            |
+| 전체 보상 이력 조회 | `GET`  | `/rewards/logs`        | ✅ AUDITOR, ADMIN  |
 
 ## 스키마 구조
 
@@ -107,7 +107,7 @@
 | `failureReason`           | `string`   | 실패 사유 (선택) |
 | `createdAt` / `updatedAt` | `Date`     | 자동 시간 기록   |
 
-### 🎁 EventAdminLog
+### 🎁 EventAdminLog (이벤트 관리 로그)
 
 | 필드                      | 타입       | 설명                         |
 | ------------------------- | ---------- | ---------------------------- |
@@ -116,6 +116,16 @@
 | `action`                  | `enum`     | `CREATE`, `UPDATE`, `DELETE` |
 | `memo`                    | `string`   | 상세 설명 (선택)             |
 | `createdAt` / `updatedAt` | `Date`     | 생성/수정 시각               |
+
+### 🎁 RewardAdminLog (보상 관리 로그)
+
+| 필드                      | 타입          | 설명                                          |
+| ------------------------- | ------------- | --------------------------------------------- |
+| `adminId`                 | string        | 보상을 생성/수정/삭제한 관리자 ID             |
+| `rewardId`                | ObjectId      | 대상 보상 ID                                  |
+| `action`                  | enum          | 로그 액션 타입 (`CREATE`, `UPDATE`, `DELETE`) |
+| `memo`                    | string (선택) | 작업에 대한 상세 설명                         |
+| `createdAt` / `updatedAt` | Date          | 로그가 생성/수정된 시간 (자동 생성됨)         |
 
 ---
 
@@ -132,6 +142,7 @@
 | `eventType`         | enum               | ✅   | 이벤트 유형 (`LOGIN_REWARD`, `LEVEL_REACHED` 등)    |
 | `condition`         | object             | ❌   | 조건 정보 (예: `{ requiredLevel: 100 }`)            |
 | `isActive`          | boolean            | ❌   | 기본값 true                                         |
+| `adminId`           | string             | ✅   | 생성한 관리자 ID                                    |
 | `newRewards`        | CreateRewardDto\[] | ✅   | 등록 시 함께 저장할 보상 배열(기존에 없던 보상)     |
 | `existingRewardIds` | string\[]          | ✅   | 등록 시 함께 저장할 보상 배열(기존에 존재하는 보상) |
 
@@ -182,3 +193,56 @@
 | `endDate`     | ISO8601 Date      | 종료일                                           |
 | `condition`   | object            | 조건 정보 (예: `{ requiredLevel: 100 }`)         |
 | `isActive`    | boolean           | 이벤트 활성 여부                                 |
+
+---
+
+## 🛡️ Event 서버 API 명세서
+
+---
+
+## ✅ 이벤트 등록
+
+- **URL**: `POST http://localhost:3000/event/register`
+- **인증 필요**: ✅ Yes
+- **Body**:
+
+```json
+{
+  "title": "5일 연속 출석 보상 기록",
+  "description": "7일 연속 출석 시 보상",
+  "startDate": "2025-06-01T00:00:00Z",
+  "endDate": "2025-06-08T00:00:00Z",
+  "eventType": "STREAK_LOGIN",
+  "condition": {
+    "requiredStreak": 7
+  },
+  "newRewards": [
+    {
+      "rewardType": "COUPON",
+      "value": "STREAK7DAY_COUPON",
+      "quantity": 1,
+      "description": "5일 연속 출석 쿠폰"
+    }
+  ],
+  "existingRewardIds": ["1234"]
+}
+```
+
+### 성공 응답 (201 Created):
+
+```json
+{
+  "eventId": "665123abc...",
+  "message": "이벤트가 성공적으로 등록되었습니다."
+}
+```
+
+### 실패 응답 (400 ):
+
+```json
+{
+  "statusCode": 400,
+  "message": "존재하지 않는 보상 ID입니다: 1234",
+  "from": "event-service"
+}
+```

@@ -1,71 +1,52 @@
 import {
-  Body,
   Controller,
   Post,
+  Body,
   UseGuards,
+  HttpException,
   Request,
-  HttpStatus,
-  Get,
-  Param,
 } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { AuthGuard } from '@nestjs/passport';
-import { Role } from '../auth/role.decorator';
-import { RoleGuard } from '../auth/role.guard';
-import { firstValueFrom } from 'rxjs';
 
-@Controller('events')
-@UseGuards(AuthGuard('jwt'), RoleGuard)
+import { firstValueFrom } from 'rxjs';
+import { Role } from 'src/auth/role.decorator';
+import { RoleGuard } from 'src/auth/role.guard';
+
+@Controller('event')
 export class EventsController {
   constructor(private readonly httpService: HttpService) {}
 
-  @Post()
-  @Role('OPERATOR', 'ADMIN')
-  async createEvent(@Body() body, @Request() req) {
-    const response$ = this.httpService.post(
-      'http://localhost:3002/events',
-      body,
-      {
-        headers: {
-          Authorization: req.headers.authorization,
-        },
-      },
-    );
+  @Post('register')
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Role('ADMIN', 'OPERATOR')
+  async registerEvent(@Body() body: any, @Request() req) {
+    try {
+      const { sub: userId } = req.user;
+      const enrichedBody = {
+        ...body,
+        adminId: userId,
+      };
+      const response = await firstValueFrom(
+        this.httpService.post(
+          'http://event:3002/event/register/event',
+          enrichedBody,
+        ),
+      );
+      return response.data;
+    } catch (error) {
+      const status = error.response?.status || 500;
+      const message =
+        error.response?.data?.message || 'Event registration failed';
 
-    const response = await firstValueFrom(response$);
-    return {
-      statusCode: HttpStatus.CREATED,
-      data: response.data,
-    };
-  }
-  @Get()
-  async getEvents(@Request() req) {
-    const response$ = this.httpService.get('http://localhost:3002/events', {
-      headers: {
-        Authorization: req.headers.authorization,
-      },
-    });
-    const response = await firstValueFrom(response$);
-    return {
-      statusCode: HttpStatus.OK,
-      data: response.data,
-    };
-  }
-
-  @Get(':id')
-  async getEventDetail(@Param('id') id: string, @Request() req) {
-    const response$ = this.httpService.get(
-      `http://localhost:3002/events/${id}`,
-      {
-        headers: {
-          Authorization: req.headers.authorization,
+      throw new HttpException(
+        {
+          statusCode: status,
+          message,
+          from: 'event-service',
         },
-      },
-    );
-    const response = await firstValueFrom(response$);
-    return {
-      statusCode: HttpStatus.OK,
-      data: response.data,
-    };
+        status,
+      );
+    }
   }
 }

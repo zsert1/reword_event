@@ -8,6 +8,14 @@ import {
 } from './schema/event-reward-mapping.schema';
 import { EventController } from './event.controller';
 import { EventService } from './event.service';
+import {
+  EventAdminLog,
+  EventAdminLogSchema,
+} from './schema/event-admin-log.schema';
+import {
+  RewardAdminLog,
+  RewardAdminLogSchema,
+} from './schema/reward-admin-log.schema';
 
 @Module({
   imports: [
@@ -16,6 +24,8 @@ import { EventService } from './event.service';
       { name: Event.name, schema: EventSchema },
       { name: Reward.name, schema: RewardSchema },
       { name: EventRewardMapping.name, schema: EventRewardMappingSchema },
+      { name: EventAdminLog.name, schema: EventAdminLogSchema },
+      { name: RewardAdminLog.name, schema: RewardAdminLogSchema },
     ]),
   ],
   controllers: [EventController],

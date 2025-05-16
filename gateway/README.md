@@ -26,18 +26,18 @@
 
 ### ✅ 회원가입
 
-URL: POST /auth/signup  
-인증 필요: ❌ No  
-Body:
+- **URL**: POST `http://localhost:3000/auth/signup`
+- **인증 필요**: ❌ No
+- **Body**:
 
 ```json
-
 {
   "username": "user1",
   "password": "pass123"
 }
-응답 (201 Created):
 ```
+
+응답 (201 Created):
 
 ```json
 {
@@ -49,11 +49,9 @@ Body:
 
 ### ✅ 로그인
 
-URL: POST /auth/login
-
-인증 필요: ❌ No
-
-Body:
+- **URL**: POST `http://localhost:3000/auth/login`
+- **인증 필요**: ❌ No
+- **Body**:
 
 ```json
 {
@@ -72,11 +70,11 @@ Body:
 
 ### ✅ 내 정보 조회
 
-URL: GET /auth/me
+- **URL**: GET `http://localhost:3000/auth/me`
 
-인증 필요: ✅ Yes
+- **인증 필요**: ✅ Yes
 
-Header:
+- **Header**:
 
 ```
 Authorization: Bearer <accessToken>
@@ -94,11 +92,11 @@ Authorization: Bearer <accessToken>
 
 ### ✅ 관리자 계정 생성
 
-URL: POST /auth/admin
+- **URL**: POST /auth/admin
 
-인증 필요: ✅ Yes
+- **인증 필요**: ✅ Yes
 
-Role 제한: ADMIN
+- **Role 제한**: ADMIN
 
 Body:
 
@@ -121,11 +119,11 @@ Body:
 
 ### ✅ 역할(Role) 수정
 
-URL: PATCH /auth/updateroles
+- **URL**: PATCH `http://localhost:3000/auth/updateroles`
 
-인증 필요: ✅ Yes
+- **인증 필요**: ✅ Yes
 
-Role 제한: ADMIN
+- **Role 제한**: ADMIN
 
 Body:
 
@@ -146,16 +144,85 @@ Body:
 
 ### ✅ 유저 삭제 (논리 삭제)
 
-URL: DELETE /auth/:id
-
-인증 필요: ✅ Yes
-
-Role 제한: ADMIN
-
-응답 (200 OK):
+- **URL**: `DELETE http://localhost:3000/auth/:id`
+- **인증 필요**: ✅ Yes
+- **Role 제한**: ADMIN
+- 응답 (200 OK):
 
 ```json
 {
   "success": true
+}
+```
+
+## Gateway 서버 - event API 명세서
+
+### ✅ 이벤트 등록
+
+- **_URL_**: `POST http://localhost:3000/event/register`
+- **인증 필요**: ✅ Yes
+- **Role 제한**: ADMIN,OPERATOR
+- **Body**:
+
+```json
+{
+  "title": "5일 연속 출석 보상 기록",
+  "description": "7일 연속 출석 시 보상",
+  "startDate": "2025-06-01T00:00:00Z",
+  "endDate": "2025-06-08T00:00:00Z",
+  "eventType": "STREAK_LOGIN",
+  "condition": {
+    "requiredStreak": 7
+  },
+  "newRewards": [
+    {
+      "rewardType": "COUPON",
+      "value": "STREAK7DAY_COUPON",
+      "quantity": 1,
+      "description": "5일 연속 출석 쿠폰"
+    }
+  ]
+}
+```
+
+### 성공 응답 (201 Created):
+
+```json
+{
+  "eventId": "665123abc...",
+  "message": "이벤트가 성공적으로 등록되었습니다."
+}
+```
+
+### **Body**(실패에시):
+
+```json
+{
+  "title": "5일 연속 출석 보상 기록",
+  "description": "7일 연속 출석 시 보상",
+  "startDate": "2025-06-01T00:00:00Z",
+  "endDate": "2025-06-08T00:00:00Z",
+  "eventType": "STREAK_LOGIN",
+  "condition": {
+    "requiredStreak": 7
+  },
+  "newRewards": [
+    {
+      "rewardType": "COUPON",
+      "value": "STREAK7DAY_COUPON",
+      "quantity": 1,
+      "description": "5일 연속 출석 쿠폰"
+    }
+  ]
+}
+```
+
+### 실패 응답 (400 ):
+
+```json
+{
+  "statusCode": 400,
+  "message": "존재하지 않는 보상 ID입니다: 1234",
+  "from": "event-service"
 }
 ```

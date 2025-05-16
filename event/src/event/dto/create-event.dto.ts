@@ -47,6 +47,9 @@ export class CreateEventDto {
   @IsBoolean()
   isActive?: boolean;
 
+  @IsString()
+  adminId: string;
+
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })

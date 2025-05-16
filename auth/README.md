@@ -61,7 +61,7 @@ NestJS + JWT 기반 인증 및 권한 관리 기능을 제공합니다.
 
 ## ✅ 회원가입
 
-- **URL**: `POST /auth/signup`
+- **URL**: `POST http://localhost:3001/auth/signup`
 - **인증 필요**: ❌ No
 - **Body**:
 
@@ -96,7 +96,7 @@ NestJS + JWT 기반 인증 및 권한 관리 기능을 제공합니다.
 
 ## ✅ 로그인
 
-- **URL**: `POST /auth/login`
+- **URL**: `POST http://localhost:3001/auth/login`
 - **인증 필요**: ❌ No
 - **Body**:
 
@@ -127,7 +127,7 @@ NestJS + JWT 기반 인증 및 권한 관리 기능을 제공합니다.
 
 ## ✅ 내 정보 조회
 
-- **URL**: `GET /user/:id`
+- **URL**: `GET http://localhost:3001/user/:id`
 - **인증 필요**: ✅ Yes
 - **Header**:
 
@@ -143,7 +143,7 @@ NestJS + JWT 기반 인증 및 권한 관리 기능을 제공합니다.
 
 ## ✅ 관리자 계정 생성
 
-- **URL**: `POST /auth/admin`
+- **URL**: `POST http://localhost:3001/auth/admin`
 - **인증 필요**: ✅ Yes
 - **Body**:
 
@@ -166,7 +166,7 @@ NestJS + JWT 기반 인증 및 권한 관리 기능을 제공합니다.
 
 ## ✅ 역할수정
 
-- **URL**: `POST /auth/updateroles`
+- **URL**: `POST http://localhost:3001/auth/updateroles`
 - **인증 필요**: ✅ Yes(ADMIN만)
 - **Body**:
 
@@ -187,7 +187,7 @@ NestJS + JWT 기반 인증 및 권한 관리 기능을 제공합니다.
 
 ## ✅ 유저 논리 삭제
 
-- **URL**: `DELETE /auth/:id`
+- **URL**: `DELETE http://localhost:3001/auth/:id`
 - **인증 필요**: ✅ Yes(ADMIN만)
 
 ### 성공 응답 (200 OK):
