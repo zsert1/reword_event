@@ -49,7 +49,7 @@ describe('AuthService', () => {
   });
 
   describe('signup', () => {
-    it('should create a new user if not exists', async () => {
+    it('존재하지 않으면 새 사용자 생성', async () => {
       userModel.findOne.mockResolvedValue(null);
       userModel.create.mockResolvedValue({ username: 'test' });
 
@@ -57,7 +57,7 @@ describe('AuthService', () => {
       expect(result.username).toBe('test');
     });
 
-    it('should throw ConflictException if user exists', async () => {
+    it('사용자가 존재하는 경우 ConflictException을 throw해야 합니다', async () => {
       userModel.findOne.mockResolvedValue({ username: 'test' });
 
       await expect(service.signup('test', 'pass')).rejects.toThrow(
@@ -67,7 +67,7 @@ describe('AuthService', () => {
   });
 
   describe('login', () => {
-    it('should return token if user & password match', async () => {
+    it('로그인 성공 시 토큰을 반환해야 합니다.', async () => {
       const hashed = await bcrypt.hash('pass', 10);
       userModel.findOne.mockResolvedValue({
         _id: 'user123',
@@ -91,14 +91,14 @@ describe('AuthService', () => {
       });
     });
 
-    it('should throw UnauthorizedException if user not found', async () => {
+    it('사용자를 찾을 수 없는 경우 UnauthorizedException을 throw해야 합니다', async () => {
       userModel.findOne.mockResolvedValue(null);
       await expect(service.login('no', 'pass', {} as any)).rejects.toThrow(
         '올바른 정보가 아닙니다.',
       );
     });
 
-    it('should throw UnauthorizedException if password does not match', async () => {
+    it('비밀번호가 일치하지 않으면 UnauthorizedException을 throw해야 합니다', async () => {
       const hashed = await bcrypt.hash('pass', 10);
       userModel.findOne.mockResolvedValue({
         _id: 'user123',

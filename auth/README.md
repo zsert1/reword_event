@@ -211,9 +211,9 @@ npm run test
 ```
 PASS src/auth/auth.service.spec.ts
   AuthService
-    ✓ should create a new user if not exists
-    ✓ should throw ConflictException if user exists
-    ✓ should return token if user & password match
-    ✓ should throw UnauthorizedException if user not found
-    ✓ should throw UnauthorizedException if password does not match
+    ✓ 존재하지 않으면 새 사용자 생성
+    ✓ 사용자가 존재하는 경우 ConflictException을 throw해야 합니다
+    ✓ 로그인 성공 시 토큰을 반환해야 합니다.
+    ✓ 사용자를 찾을 수 없는 경우 UnauthorizedException을 throw해야 합니다
+    ✓ 비밀번호가 일치하지 않으면 UnauthorizedException을 throw해야 합니다
 ```
