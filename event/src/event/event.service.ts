@@ -133,8 +133,6 @@ export class EventService {
     } catch (err) {
       await session.abortTransaction();
 
-      console.error('[EVENT ERROR]', err); // 로그로 정확히 찍기
-
       if (err instanceof HttpException) {
         throw err;
       }
