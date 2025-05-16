@@ -1,3 +1,4 @@
+// src/auth/roles.guard.ts
 import {
   Injectable,
   CanActivate,
@@ -19,6 +20,8 @@ export class RolesGuard implements CanActivate {
     if (!requiredRoles) return true;
 
     const { user } = context.switchToHttp().getRequest();
+    if (!user) throw new ForbiddenException('인증되지 않은 사용자입니다.');
+
     const hasRole = requiredRoles.some((role) => user.roles?.includes(role));
     if (!hasRole) throw new ForbiddenException('권한이 없습니다.');
 

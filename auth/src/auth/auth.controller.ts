@@ -1,15 +1,6 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  UseGuards,
-  Request,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthGuard } from '@nestjs/passport';
-import { Roles } from 'src/roles.decorator';
-import { RolesGuard } from 'src/roles.guard';
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -31,22 +22,20 @@ export class AuthController {
   ) {
     return this.authService.login(body.username, body.password, req);
   }
-  @UseGuards(AuthGuard('jwt'))
   @Get('me')
   getMe(@Request() req) {
     return req.user;
   }
-
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN')
-  @Get('admin-only')
-  getAdminOnly(@Request() req) {
-    return req.user;
-  }
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('USER')
-  @Get('user-only')
-  getUserOnly(@Request() req) {
-    return req.user;
-  }
+  // @UseGuards(AuthGuard('jwt'), RolesGuard)
+  // @Roles('ADMIN')
+  // @Get('admin-only')
+  // getAdminOnly(@Request() req) {
+  //   return req.user;
+  // }
+  // @UseGuards(AuthGuard('jwt'), RolesGuard)
+  // @Roles('USER')
+  // @Get('user-only')
+  // getUserOnly(@Request() req) {
+  //   return req.user;
+  // }
 }
