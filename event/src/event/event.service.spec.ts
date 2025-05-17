@@ -136,4 +136,129 @@ describe('EventService', () => {
       isDeleted: false,
     });
   });
+
+  describe('getEventsByStatus', () => {
+    it('활성화된 이벤트만 반환힙니디.', async () => {
+      const now = new Date();
+
+      const mockEvents = [
+        {
+          _id: 'active1',
+          title: 'Active Event',
+          description: 'Still ongoing',
+          eventType: 'LOGIN_REWARD',
+          startDate: new Date(now.getTime() - 1000 * 60),
+          endDate: new Date(now.getTime() + 1000 * 60 * 60),
+          condition: {},
+          isActive: true,
+          isDeleted: false,
+        },
+        {
+          _id: 'ended1',
+          title: 'Ended Event',
+          description: 'Already finished',
+          eventType: 'LEVEL_REACHED',
+          startDate: new Date(now.getTime() - 1000 * 60 * 60 * 2),
+          endDate: new Date(now.getTime() - 1000 * 60),
+          condition: {},
+          isActive: true,
+          isDeleted: false,
+        },
+      ];
+
+      const findMock = jest.fn().mockReturnValue({
+        lean: () => Promise.resolve([mockEvents[0]]),
+      });
+
+      mockEventModel.find = findMock;
+
+      const result = await service.getEventsByStatus('active');
+
+      expect(findMock).toHaveBeenCalledWith({
+        isDeleted: false,
+        endDate: { $gt: expect.any(Date) },
+      });
+      expect(result).toHaveLength(1);
+      expect(result[0].title).toBe('Active Event');
+    });
+
+    it('종료된 이벤트만 반환 합니다', async () => {
+      const now = new Date();
+
+      const mockEvents = [
+        {
+          _id: 'ended1',
+          title: 'Ended Event',
+          description: 'Already finished',
+          eventType: 'LEVEL_REACHED',
+          startDate: new Date(now.getTime() - 1000 * 60 * 60 * 2),
+          endDate: new Date(now.getTime() - 1000 * 60),
+          condition: {},
+          isActive: true,
+          isDeleted: false,
+        },
+      ];
+
+      const findMock = jest.fn().mockReturnValue({
+        lean: () => Promise.resolve(mockEvents),
+      });
+
+      mockEventModel.find = findMock;
+
+      const result = await service.getEventsByStatus('ended');
+
+      expect(findMock).toHaveBeenCalledWith({
+        isDeleted: false,
+        endDate: { $lte: expect.any(Date) },
+      });
+      expect(result).toHaveLength(1);
+      expect(result[0].title).toBe('Ended Event');
+    });
+  });
+
+  describe('getEventById', () => {
+    it('존재하는 ID로 이벤트 단건 조회가 되어야 합니다', async () => {
+      const id = '507f1f77bcf86cd799439011';
+      const mockEvent = {
+        _id: id,
+        title: 'Test Event',
+        description: '설명',
+        eventType: 'LOGIN_REWARD',
+        startDate: new Date(),
+        endDate: new Date(),
+        condition: { level: 10 },
+        isActive: true,
+        isDeleted: false,
+      };
+
+      mockEventModel.findOne = jest.fn().mockResolvedValue(mockEvent);
+
+      const result = await service.getEventById(id);
+
+      expect(mockEventModel.findOne).toHaveBeenCalledWith({
+        _id: id,
+        isDeleted: false,
+      });
+      expect(result.eventId).toBe(id);
+      expect(result.title).toBe('Test Event');
+    });
+
+    it('형식이 잘못된 ID로 조회하면 예외처리로 전달합니다.', async () => {
+      const invalidId = 'not-an-objectid';
+
+      await expect(service.getEventById(invalidId)).rejects.toThrowError(
+        '유효하지 않은 이벤트 ID 형식입니다.',
+      );
+    });
+
+    it('존재하지 않는 ID로 조회하면 NotFound 예외처리 되어야합니다.', async () => {
+      const id = '507f1f77bcf86cd799439011';
+
+      mockEventModel.findOne = jest.fn().mockResolvedValue(null);
+
+      await expect(service.getEventById(id)).rejects.toThrowError(
+        '이벤트를 찾을 수 없습니다.',
+      );
+    });
+  });
 });

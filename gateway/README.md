@@ -226,3 +226,77 @@ Body:
   "from": "event-service"
 }
 ```
+
+### ✅ 이벤트 전체 조회
+
+- **_URL_**: `GET http://localhost:3000/event?status=ongoing|ended`
+- **인증 필요**: ✅ Yes
+- **Query Parameter:**:
+  - status (optional): ongoing 또는 ended 중 하나
+  - ongoing: 현재 진행 중인 이벤트만 조회
+  - ended: 종료된 이벤트만 조회
+  - 생략 시 전체 이벤트 반환
+
+### 성공 응답 (200 OK):
+
+```json
+[
+  {
+    "eventId": "665123abc...",
+    "title": "7일 출석 보상",
+    "description": "7일 연속 출석하면 쿠폰 지급",
+    "eventType": "STREAK_LOGIN",
+    "startDate": "2025-06-01T00:00:00Z",
+    "endDate": "2025-06-08T00:00:00Z",
+    "condition": {
+      "requiredStreak": 7
+    },
+    "isActive": true
+  },
+  ...
+]
+```
+
+### 실패 응답 (400 Bad Request)"
+
+```json
+{
+  "statusCode": 404,
+  "message": "이벤트를 찾을 수 없습니다.",
+  "from": "event-service"
+}
+```
+
+## ✅ 이벤트 단건 조회
+
+- **URL**: `GET http://localhost:3000/event/:id`
+- **인증 필요**: ✅ Yes
+- **Path Parameter:**:
+  - id: 조회할 이벤트의 고유 ID
+
+### 성공 응답 (200 OK):
+
+```json
+{
+  "eventId": "665123abc...",
+  "title": "7일 출석 보상",
+  "description": "7일 연속 출석하면 쿠폰 지급",
+  "eventType": "STREAK_LOGIN",
+  "startDate": "2025-06-01T00:00:00Z",
+  "endDate": "2025-06-08T00:00:00Z",
+  "condition": {
+    "requiredStreak": 7
+  },
+  "isActive": true
+}
+```
+
+### 실패 응답 (404 Not Found):
+
+```json
+{
+  "statusCode": 404,
+  "message": "이벤트를 찾을 수 없습니다.",
+  "from": "event-service"
+}
+```

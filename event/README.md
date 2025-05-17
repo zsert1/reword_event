@@ -1,13 +1,13 @@
 # 🧱 Event 서버
 
-| 기능                | 메서드 | 경로                   | 권한               |
-| ------------------- | ------ | ---------------------- | ------------------ |
-| 이벤트 등록         | `POST` | `event/register/event` | ✅ OPERATOR, ADMIN |
-| 이벤트 목록 조회    | `GET`  | `/events`              | ✅ 로그인 유저     |
-| 이벤트 상세 조회    | `GET`  | `/events/:id`          | ✅ 로그인 유저     |
-| 보상 신청           | `POST` | `/rewards/claim`       | ✅ USER            |
-| 내 보상 이력 조회   | `GET`  | `/rewards/history`     | ✅ USER            |
-| 전체 보상 이력 조회 | `GET`  | `/rewards/logs`        | ✅ AUDITOR, ADMIN  |
+| 기능                | 메서드 | 경로                    | 권한               |
+| ------------------- | ------ | ----------------------- | ------------------ |
+| 이벤트 등록         | `POST` | `event/register/event`  | ✅ OPERATOR, ADMIN |
+| 이벤트 목록 조회    | `GET`  | `event`                 | ✅ 로그인 유저     |
+| 이벤트 상세 조회    | `GET`  | `event/:id`             | ✅ 로그인 유저     |
+| 보상 신청           | `POST` | `event/rewards/claim`   | ✅ USER            |
+| 내 보상 이력 조회   | `GET`  | `event/rewards/history` | ✅ USER            |
+| 전체 보상 이력 조회 | `GET`  | `event/rewards/logs`    | ✅ AUDITOR, ADMIN  |
 
 ## 스키마 구조
 
@@ -127,6 +127,17 @@
 | `memo`                    | string (선택) | 작업에 대한 상세 설명                         |
 | `createdAt` / `updatedAt` | Date          | 로그가 생성/수정된 시간 (자동 생성됨)         |
 
+### 🎁 UserActionLog (유저 행동 로그)
+
+| 필드                     | 타입                  | 설명                                               |
+| ------------------------ | --------------------- | -------------------------------------------------- |
+| `userId`                 | `Types.ObjectId`      | 행동을 수행한 유저 ID                              |
+| `eventId`                | `Types.ObjectId`      | 어떤 이벤트에 해당하는 행동인지 명시               |
+| `actionType`             | `EventType` (enum)    | 이벤트 유형 (`LOGIN_REWARD`, `LEVEL_REACHED`, ...) |
+| `metadata`               | `Record<string, any>` | 행동의 상세 정보 (예: `{ bossId: 'dragon_lord' }`) |
+| `occurredAt`             | `Date` (optional)     | 행동 발생 시점 (없으면 `createdAt` 사용)           |
+| `createdAt`, `updatedAt` | `Date`                | `@Schema({ timestamps: true })`에 의해 자동 처리됨 |
+
 ---
 
 ## 📌 DTO 정의
@@ -202,7 +213,7 @@
 
 ## ✅ 이벤트 등록
 
-- **URL**: `POST http://localhost:3000/event/register`
+- **URL**: `POST http://localhost:3002/event/registe/event`
 - **인증 필요**: ✅ Yes
 - **Body**:
 
@@ -243,6 +254,81 @@
 {
   "statusCode": 400,
   "message": "존재하지 않는 보상 ID입니다: 1234",
+  "from": "event-service"
+}
+```
+
+## ✅ 이벤트 전체 조회
+
+- **URL**: `GET http://localhost:3002/event?status=ongoing|ended`
+- **인증 필요**: ✅ Yes
+- **Query Parameter:**:
+  - status (optional): ongoing 또는 ended 중 하나
+  - ongoing: 현재 진행 중인 이벤트만 조회
+  - ended: 종료된 이벤트만 조회
+  - 생략 시 전체 이벤트 반환
+
+### 성공 응답 (200 OK):
+
+```json
+[
+  {
+    "eventId": "665123abc...",
+    "title": "7일 출석 보상",
+    "description": "7일 연속 출석하면 쿠폰 지급",
+    "eventType": "STREAK_LOGIN",
+    "startDate": "2025-06-01T00:00:00Z",
+    "endDate": "2025-06-08T00:00:00Z",
+    "condition": {
+      "requiredStreak": 7
+    },
+    "isActive": true
+  },
+  ...
+]
+
+```
+
+### 실패 응답 (400 Bad Request)"
+
+```json
+{
+  "statusCode": 404,
+  "message": "이벤트를 찾을 수 없습니다.",
+  "from": "event-service"
+}
+```
+
+## ✅ 이벤트 단건 조회
+
+- **URL**: `GET http://localhost:3002/event/:id`
+- **인증 필요**: ✅ Yes
+- **Path Parameter:**:
+  - id: 조회할 이벤트의 고유 ID
+
+### 성공 응답 (200 OK):
+
+```json
+{
+  "eventId": "665123abc...",
+  "title": "7일 출석 보상",
+  "description": "7일 연속 출석하면 쿠폰 지급",
+  "eventType": "STREAK_LOGIN",
+  "startDate": "2025-06-01T00:00:00Z",
+  "endDate": "2025-06-08T00:00:00Z",
+  "condition": {
+    "requiredStreak": 7
+  },
+  "isActive": true
+}
+```
+
+### 실패 응답 (404 Not Found):
+
+```json
+{
+  "statusCode": 404,
+  "message": "이벤트를 찾을 수 없습니다.",
   "from": "event-service"
 }
 ```

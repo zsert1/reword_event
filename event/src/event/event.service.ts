@@ -193,4 +193,27 @@ export class EventService {
       isActive: event.isActive,
     };
   }
+
+  async getEventsByStatus(status: 'active' | 'ended' | 'all' = 'active') {
+    const now = new Date();
+    const query: any = { isDeleted: false };
+
+    if (status === 'active') {
+      query.endDate = { $gt: now };
+    } else if (status === 'ended') {
+      query.endDate = { $lte: now };
+    }
+
+    const events = await this.eventModel.find(query).lean();
+    return events.map((e) => ({
+      eventId: e._id.toString(),
+      title: e.title,
+      description: e.description,
+      eventType: e.eventType,
+      startDate: e.startDate,
+      endDate: e.endDate,
+      condition: e.condition,
+      isActive: e.isActive,
+    }));
+  }
 }
