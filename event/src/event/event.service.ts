@@ -4,10 +4,11 @@ import {
   HttpException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
-import mongoose, { Model, Connection } from 'mongoose';
+import mongoose, { Model, Connection, Types } from 'mongoose';
 
 import { InjectConnection } from '@nestjs/mongoose';
 import { EventDocument } from './schema/event.schema';
@@ -19,6 +20,7 @@ import {
   RewardActionType,
   RewardAdminLog,
 } from './schema/reward-admin-log.schema';
+import { EventResponseDto } from './dto/event-response.dto';
 
 @Injectable()
 export class EventService {
@@ -143,5 +145,52 @@ export class EventService {
     } finally {
       session.endSession();
     }
+  }
+
+  async getAllEvents(
+    status?: 'ongoing' | 'ended',
+  ): Promise<EventResponseDto[]> {
+    const now = new Date();
+    const filter: any = { isDeleted: false };
+
+    if (status === 'ongoing') {
+      filter.endDate = { $gt: now };
+    } else if (status === 'ended') {
+      filter.endDate = { $lt: now };
+    }
+
+    const events = await this.eventModel.find(filter).sort({ createdAt: -1 });
+    return events.map((e) => ({
+      eventId: e._id.toString(),
+      title: e.title,
+      description: e.description,
+      eventType: e.eventType,
+      startDate: e.startDate,
+      endDate: e.endDate,
+      condition: e.condition,
+      isActive: e.isActive,
+    }));
+  }
+
+  async getEventById(id: string): Promise<EventResponseDto> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('유효하지 않은 이벤트 ID 형식입니다.');
+    }
+
+    const event = await this.eventModel.findOne({ _id: id, isDeleted: false });
+    if (!event) {
+      throw new NotFoundException('이벤트를 찾을 수 없습니다.');
+    }
+
+    return {
+      eventId: event._id.toString(),
+      title: event.title,
+      description: event.description,
+      eventType: event.eventType,
+      startDate: event.startDate,
+      endDate: event.endDate,
+      condition: event.condition,
+      isActive: event.isActive,
+    };
   }
 }

@@ -1,0 +1,11 @@
+export enum EventType {
+  LOGIN_REWARD = 'LOGIN_REWARD',
+  LEVEL_REACHED = 'LEVEL_REACHED',
+  QUEST_CLEAR = 'QUEST_CLEAR',
+  BOSS_KILL = 'BOSS_KILL',
+  DUNGEON_CLEAR = 'DUNGEON_CLEAR',
+  FRIEND_INVITE = 'FRIEND_INVITE',
+  STREAK_LOGIN = 'STREAK_LOGIN',
+}
+
+export const EVENT_TYPE_ENUM: string[] = Object.values(EventType);
