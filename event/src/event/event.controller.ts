@@ -6,10 +6,12 @@ import {
   Param,
   Post,
   Query,
+  Request,
 } from '@nestjs/common';
 import { EventService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { EventResponseDto } from './dto/event-response.dto';
+import { LogUserActionDto } from './dto/log-user-action.dto';
 
 @Controller('event')
 export class EventController {
@@ -34,5 +36,16 @@ export class EventController {
   @Get(':id')
   async getEventById(@Param('id') id: string): Promise<EventResponseDto> {
     return this.eventService.getEventById(id);
+  }
+
+  @Post('log-action')
+  async logUserAction(@Request() req, @Body() dto: LogUserActionDto) {
+    const userId = req.headers['x-user-id'];
+    return this.eventService.logUserAction(userId, dto);
+  }
+  @Post(':id/claim')
+  async claimReward(@Request() req, @Param('id') eventId: string) {
+    const userId = req.headers['x-user-id'];
+    return this.eventService.claimReward(userId, eventId);
   }
 }

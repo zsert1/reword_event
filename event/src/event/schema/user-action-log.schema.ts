@@ -17,9 +17,6 @@ export class UserActionLog {
 
   @Prop()
   occurredAt?: Date;
-
-  @Prop({ type: Types.ObjectId, ref: 'Event', required: true })
-  eventId: Types.ObjectId;
 }
 
 export const UserActionLogSchema = SchemaFactory.createForClass(UserActionLog);

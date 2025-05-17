@@ -1,10 +1,5 @@
 import { IsMongoId, IsEnum } from 'class-validator';
-
-export enum ProgressStatus {
-  IN_PROGRESS = 'IN_PROGRESS',
-  COMPLETED = 'COMPLETED',
-  REWARDED = 'REWARDED',
-}
+import { ProgressStatus } from '../common/progress-status-type.enum';
 
 export class UpdateProgressDto {
   @IsMongoId()

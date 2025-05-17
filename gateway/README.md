@@ -300,3 +300,52 @@ Body:
   "from": "event-service"
 }
 ```
+
+## ✅ 3. 이벤트 보상 신청 (Claim)
+
+- **URL**: `POST http://localhost:3000/event/:id/claim`
+- **인증 필요**: ✅ Yes
+- **Path Parameter:**:
+
+  - id: 조회할 이벤트의 고유 ID
+
+- **Header**: Authorization: Bearer <JWT>
+
+- Body: 없음
+
+### 성공 응답 (200 OK):
+
+```json
+{
+  "status": "SUCCESS",
+  "rewards": [
+    {
+      "rewardType": "COUPON",
+      "value": "STREAK7DAY_COUPON",
+      "quantity": 1,
+      "description": "7일 연속 출석 쿠폰"
+    }
+  ],
+  "message": "보상이 성공적으로 지급되었습니다."
+}
+```
+
+### 🔹 실패 응답 예시 1: 조건 미충족
+
+```json
+{
+  "statusCode": 400,
+  "message": "이벤트 조건을 아직 만족하지 않았습니다.",
+  "from": "event-service"
+}
+```
+
+### 🔹 실패 응답 예시 2: 이미 보상 받음
+
+```json
+{
+  "statusCode": 400,
+  "message": "이미 보상을 지급받은 이벤트입니다.",
+  "from": "event-service"
+}
+```

@@ -1,18 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { ProgressStatus } from '../common/progress-status-type.enum';
 
 export type UserEventProgressDocument = UserEventProgress & Document;
 
-export enum ProgressStatus {
-  IN_PROGRESS = 'IN_PROGRESS',
-  COMPLETED = 'COMPLETED',
-  REWARDED = 'REWARDED',
-}
-
 @Schema({ timestamps: true })
 export class UserEventProgress {
-  @Prop({ required: true })
-  userId: string;
+  @Prop({ type: Types.ObjectId, required: true })
+  userId: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'Event', required: true })
   eventId: Types.ObjectId;

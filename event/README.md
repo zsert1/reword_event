@@ -132,11 +132,22 @@
 | 필드                     | 타입                  | 설명                                               |
 | ------------------------ | --------------------- | -------------------------------------------------- |
 | `userId`                 | `Types.ObjectId`      | 행동을 수행한 유저 ID                              |
-| `eventId`                | `Types.ObjectId`      | 어떤 이벤트에 해당하는 행동인지 명시               |
 | `actionType`             | `EventType` (enum)    | 이벤트 유형 (`LOGIN_REWARD`, `LEVEL_REACHED`, ...) |
 | `metadata`               | `Record<string, any>` | 행동의 상세 정보 (예: `{ bossId: 'dragon_lord' }`) |
 | `occurredAt`             | `Date` (optional)     | 행동 발생 시점 (없으면 `createdAt` 사용)           |
 | `createdAt`, `updatedAt` | `Date`                | `@Schema({ timestamps: true })`에 의해 자동 처리됨 |
+
+### 🎁 UserRewardHistory(보상을 수령한 시점과 지급 내용을 기록)
+
+| 필드명                | 타입                  | 설명                   |
+| --------------------- | --------------------- | ---------------------- |
+| `userId`              | `ObjectId`            | 보상을 수령한 유저     |
+| `eventId`             | `ObjectId`            | 보상이 연결된 이벤트   |
+| `eventType`           | `EventType`           | 어떤 유형의 이벤트인지 |
+| `rewards`             | `Reward[]`            | 지급된 보상            |
+| `claimedAt`           | `Date`                | 보상 지급 시점         |
+| `conditionSnapshot`   | `Record<string, any>` | 조건 만족에 대한 증빙  |
+| `createdAt/updatedAt` | `Date`                | 자동 기록              |
 
 ---
 
@@ -332,3 +343,18 @@
   "from": "event-service"
 }
 ```
+
+## 🧪 Postman 테스트 안내(보상 수령 관련테스트)
+
+❗ Gateway를 통해서만 테스트 가능
+직접 Event 서버 호출 불가 → JWT 인증 미적용
+
+반드시 localhost:3000 (Gateway 포트)로 요청해야 함
+
+### 테스트 흐름
+
+1. 로그인 API (e.g. /auth/login)로 JWT 발급
+
+2. Authorization: Bearer <JWT> 헤더 설정
+
+3. /event/:id/claim으로 POST 요청 보내기

@@ -1,4 +1,3 @@
-// event.service.ts
 import {
   BadRequestException,
   HttpException,
@@ -21,6 +20,12 @@ import {
   RewardAdminLog,
 } from './schema/reward-admin-log.schema';
 import { EventResponseDto } from './dto/event-response.dto';
+import { LogUserActionDto } from './dto/log-user-action.dto';
+import { UserActionLog } from './schema/user-action-log.schema';
+import { EventType } from './common/event-type.enum';
+import { UserEventProgress } from './schema/user-event-progress.schema';
+import { UserRewardHistory } from './schema/user-reward-history.schema';
+import { ProgressStatus } from './common/progress-status-type.enum';
 
 @Injectable()
 export class EventService {
@@ -35,6 +40,12 @@ export class EventService {
     private readonly logModel: Model<EventAdminLog>,
     @InjectModel(RewardAdminLog.name)
     private readonly rewardLogModel: Model<RewardAdminLog>,
+    @InjectModel(UserActionLog.name)
+    private readonly userActionLogModel: Model<UserActionLog>,
+    @InjectModel(UserEventProgress.name)
+    private readonly userEventProgressModel: Model<UserEventProgress>,
+    @InjectModel(UserRewardHistory.name)
+    private readonly userRewardHistoryModel: Model<UserRewardHistory>,
     @InjectConnection()
     private readonly connection: Connection,
   ) {}
@@ -216,4 +227,195 @@ export class EventService {
       isActive: e.isActive,
     }));
   }
+
+  async logUserAction(userId: string, dto: LogUserActionDto) {
+    const log = new this.userActionLogModel({
+      userId,
+      actionType: dto.actionType,
+      metadata: dto.metadata,
+      occurredAt: dto.occurredAt ?? new Date(),
+    });
+
+    await log.save();
+
+    await this.updateProgressIfCompleted(userId, dto.actionType, dto.metadata);
+    return { message: '유저 행동이 기록되었습니다.' };
+  }
+
+  async updateProgressIfCompleted(
+    userId: string,
+    actionType: EventType,
+    metadata: Record<string, any>,
+  ) {
+    const now = new Date();
+
+    const events = await this.eventModel.find({
+      eventType: actionType,
+      isDeleted: false,
+      isActive: true,
+      startDate: { $lte: now },
+      endDate: { $gte: now },
+    });
+
+    for (const event of events) {
+      const isConditionMet = this.checkCondition(
+        event.eventType,
+        event.condition,
+        metadata,
+      );
+      if (!isConditionMet) continue;
+
+      const progress = await this.userEventProgressModel.findOne({
+        userId,
+        eventId: event._id,
+      });
+
+      if (progress) {
+        if (progress.progressStatus !== ProgressStatus.IN_PROGRESS) continue;
+
+        progress.progressStatus = ProgressStatus.COMPLETED;
+        progress.completedAt = new Date();
+        await progress.save();
+      } else {
+        await this.userEventProgressModel.create({
+          userId: new Types.ObjectId(userId),
+          eventId: event._id,
+          progressStatus: ProgressStatus.COMPLETED,
+          completedAt: new Date(),
+        });
+      }
+    }
+  }
+
+  // 조건 검증
+  checkCondition(
+    eventType: EventType,
+    condition: any,
+    metadata: Record<string, any>,
+  ): boolean {
+    switch (eventType) {
+      case EventType.BOSS_KILL:
+        return metadata.bossId === condition.bossId;
+
+      case EventType.STREAK_LOGIN:
+        return metadata.currentStreak >= condition.requiredStreak;
+
+      case EventType.QUEST_CLEAR:
+        return metadata.questId === condition.questId;
+
+      case EventType.DUNGEON_CLEAR:
+        return metadata.dungeonLevel >= condition.requiredLevel;
+
+      case EventType.FRIEND_INVITE:
+        return metadata.inviteCount >= condition.minInvite;
+
+      case EventType.LEVEL_REACHED:
+        return metadata.level >= condition.requiredLevel;
+
+      case EventType.LOGIN_REWARD:
+        return true; // 로그인 보상은 단순 로그인으로 인정
+
+      default:
+        return false;
+    }
+  }
+
+  async saveRewardHistory({
+    userId,
+    event,
+    rewards,
+    conditionSnapshot,
+  }: {
+    userId: string;
+    event: EventDocument;
+    rewards: any[];
+    conditionSnapshot?: Record<string, any>;
+  }) {
+    await this.userRewardHistoryModel.create({
+      userId,
+      eventId: event._id,
+      eventType: event.eventType,
+      rewards,
+      claimedAt: new Date(),
+      conditionSnapshot,
+    });
+  }
+
+  async claimReward(userId: string, eventId: string) {
+    console.log('🔥 claimReward called with', typeof userId, typeof eventId);
+    try {
+      const event = await this.eventModel.findOne({
+        _id: eventId,
+        isDeleted: false,
+      });
+      if (!event) {
+        throw new NotFoundException('이벤트를 찾을 수 없습니다.');
+      }
+
+      const progress = await this.userEventProgressModel.findOne({
+        userId: this.toObjectId(userId),
+        eventId: this.toObjectId(eventId),
+      });
+
+      if (progress && progress.rewardClaimedAt) {
+        throw new BadRequestException('이미 보상을 지급받은 이벤트입니다.');
+      }
+      if (
+        !progress ||
+        (progress.progressStatus as ProgressStatus) !== ProgressStatus.COMPLETED
+      ) {
+        throw new BadRequestException(
+          '이벤트 조건을 아직 만족하지 않았습니다.',
+        );
+      }
+
+      const mappings = await this.mappingModel.find({
+        eventId: this.toObjectId(eventId),
+        isDeleted: false,
+      });
+      const rewardIds = mappings.map((m) => m.rewardId);
+
+      const rewards = await this.rewardModel.find({
+        _id: { $in: rewardIds },
+        isDeleted: false,
+      });
+
+      if (rewards.length === 0) {
+        throw new InternalServerErrorException(
+          '이벤트에 연결된 보상이 존재하지 않습니다.',
+        );
+      }
+
+      const rewardSnapshots = rewards.map((reward) => ({
+        rewardType: reward.rewardType,
+        value: reward.value,
+        quantity: reward.quantity,
+        description: reward.description,
+      }));
+
+      progress.progressStatus = ProgressStatus.REWARDED;
+      progress.rewardClaimedAt = new Date();
+      await progress.save();
+
+      await this.saveRewardHistory({
+        userId,
+        event,
+        rewards: rewardSnapshots,
+        conditionSnapshot: event.condition,
+      });
+
+      return {
+        status: 'SUCCESS',
+        rewards: rewardSnapshots,
+        message: '보상이 성공적으로 지급되었습니다.',
+      };
+    } catch (error) {
+      console.error('🔥 claimReward 내부 에러:', error);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  toObjectId = (id: string | Types.ObjectId): Types.ObjectId => {
+    return typeof id === 'string' ? new Types.ObjectId(id) : id;
+  };
 }

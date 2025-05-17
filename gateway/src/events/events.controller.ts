@@ -92,4 +92,64 @@ export class EventsController {
       );
     }
   }
+  @Post(':id/claim')
+  @UseGuards(AuthGuard('jwt'))
+  @Role('USER')
+  async claimReward(@Param('id') eventId: string, @Request() req) {
+    try {
+      const userId = req.user.sub;
+
+      const response = await firstValueFrom(
+        this.httpService.post(
+          `http://event:3002/event/${eventId}/claim`,
+          {},
+          {
+            headers: {
+              'x-user-id': userId,
+            },
+          },
+        ),
+      );
+
+      return response.data;
+    } catch (error) {
+      const status = error.response?.status || 500;
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        'Internal server error';
+
+      throw new HttpException(
+        {
+          statusCode: status,
+          message,
+          from: 'event-service',
+        },
+        status,
+      );
+    }
+  }
+
+  @Post('log-action')
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Role('USER', 'OPERATOR', 'ADMIN')
+  async logUserAction(@Request() req, @Body() body: any) {
+    const userId = req.user.sub;
+
+    const response = await firstValueFrom(
+      this.httpService.post(
+        'http://event:3002/event/log-action',
+        {
+          ...body,
+        },
+        {
+          headers: {
+            'x-user-id': userId,
+          },
+        },
+      ),
+    );
+
+    return response.data;
+  }
 }

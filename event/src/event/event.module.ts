@@ -16,6 +16,18 @@ import {
   RewardAdminLog,
   RewardAdminLogSchema,
 } from './schema/reward-admin-log.schema';
+import {
+  UserEventProgress,
+  UserEventProgressSchema,
+} from './schema/user-event-progress.schema';
+import {
+  UserActionLog,
+  UserActionLogSchema,
+} from './schema/user-action-log.schema';
+import {
+  UserRewardHistory,
+  UserRewardHistorySchema,
+} from './schema/user-reward-history.schema';
 
 @Module({
   imports: [
@@ -26,6 +38,9 @@ import {
       { name: EventRewardMapping.name, schema: EventRewardMappingSchema },
       { name: EventAdminLog.name, schema: EventAdminLogSchema },
       { name: RewardAdminLog.name, schema: RewardAdminLogSchema },
+      { name: UserEventProgress.name, schema: UserEventProgressSchema },
+      { name: UserActionLog.name, schema: UserActionLogSchema },
+      { name: UserRewardHistory.name, schema: UserRewardHistorySchema },
     ]),
   ],
   controllers: [EventController],
