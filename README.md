@@ -243,8 +243,6 @@ rs.status(); // "stateStr": "PRIMARY"이면 정상
 
 MongoDB가 준비되기 전에 Auth/Event 서버가 연결을 시도하면 실패할 수 있습니다.
 
-간단한 대응으로는 다음과 같은 안내를 추가하세요:
-
 ### 🔄 MongoDB 연결 지연으로 인한 초기 연결 오류 발생 시
 
 간혹 MongoDB가 완전히 초기화되기 전에 다른 서비스(Auth/Event)가 연결을 시도하여 실패할 수 있습니다.
