@@ -2,6 +2,21 @@
 
 > RPG 이벤트 기반 보상 시스템 – NestJS 기반 MSA 아키텍처
 
+## 🚀 실행 방법 (가장 빠른 테스트 방법)
+
+### 1. 프로젝트 루트에서 아래 명령어 실행
+
+```bash
+docker-compose up --build
+```
+
+### 2. !!MongoDB Replica Set 초기화 (최초 1회만)
+
+```
+docker exec -it mongodb mongosh
+rs.initiate()
+```
+
 ## 🧩 설계 설명 및 구현 의도
 
 ### 1. 이벤트 및 보상 설계
