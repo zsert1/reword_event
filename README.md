@@ -1,5 +1,82 @@
 # reword_event
 
+## 🧩 설계 설명 및 구현 의도
+
+### 1. 이벤트 및 보상 설계
+
+- RPG 게임의 다양한 이벤트 시나리오를 반영하기 위해 `EventType` Enum을 도입하여 `LOGIN_REWARD`, `LEVEL_REACHED`, `BOSS_KILL`, `STREAK_LOGIN` 등 이벤트 타입을 유연하게 확장할 수 있도록 설계했습니다.
+- 이벤트와 보상은 N:N 관계로, 별도의 매핑 테이블(`EventRewardMapping`)을 구성하여 이벤트에 여러 보상을 연결하거나 재사용 가능한 구조로 만들었습니다.
+
+### 2. 조건 검증 방식
+
+- 각 이벤트 타입에 따라 다른 조건 검증이 필요한 점을 고려해 `checkCondition()` 메서드에 `switch-case` 기반 분기 처리를 적용했습니다.
+- 조건 비교는 유저 행동 로그의 `metadata`를 기반으로 실행되며, 예를 들어 `BOSS_KILL`은 `bossId`, `STREAK_LOGIN`은 `currentStreak`를 비교합니다.
+
+### 3. API 구조 및 인증 처리
+
+- 인증/인가는 Gateway 서버에서 JWT를 검증하고, `x-user-id` 헤더로 내부 서비스에 유저 정보를 전달하는 구조를 사용했습니다.
+- 인증 로직과 비즈니스 로직을 명확히 분리하여 확장성과 테스트 용이성을 높였습니다.
+
+### 4. 이벤트 보상 흐름
+
+1. 유저가 특정 행동을 수행하면 `/event/action` API를 통해 로그가 기록됩니다.
+2. 해당 행동이 조건을 충족하는지 실시간으로 검사하고, 조건을 만족하면 `UserEventProgress`를 `COMPLETED`로 업데이트합니다.
+3. 사용자가 `/event/:id/claim` API를 호출하면 보상이 지급되고, `UserRewardHistory`에 기록됩니다.
+
+### 5. 트랜잭션 사용 이유
+
+- 이벤트 생성 및 보상 생성, 매핑 등록, 로그 기록은 모두 하나의 트랜잭션으로 처리되어야 합니다.
+- MongoDB 트랜잭션 사용을 위해 `Replica Set` 모드에서 실행되며, NestJS의 `startSession()` + `commitTransaction()` 구조를 도입했습니다.
+
+---
+
+## 🌱 Seed Script 설명 (자동 초기화)
+
+### 목적
+
+**즉시 기능 테스트**를 진행할 수 있도록 사용자, 이벤트, 보상, 행동 이력을 도커 실행 시 자동으로 삽입합니다.
+
+### 구성
+
+| 서버       | Seed 파일       | 설명                                        |
+| ---------- | --------------- | ------------------------------------------- |
+| Auth 서버  | `user-seed.ts`  | 유저 및 관리자 계정 사전 등록               |
+| Event 서버 | `event-seed.ts` | 이벤트 3종, 보상, 매핑, 유저 행동 로그 삽입 |
+
+---
+
+### 주요 데이터 흐름
+
+1. **유저 데이터**
+
+   - `_id` 명시 지정 (ObjectId) → 이벤트 서버에서 참조 가능
+   - `ADMIN`, `USER` 권한 계정 구분 포함
+
+2. **이벤트 및 보상**
+
+   - `EventService.createEvent()` 내부 로직을 그대로 사용
+   - `userIds` 배열을 통해 유저별 `UserEventProgress` 자동 생성
+   - 보상은 `newRewards`, `existingRewardIds`를 혼합 지원
+
+3. **행동 로그**
+   - 예: user1이 `LOGIN_REWARD` 조건을 충족하도록 `logUserAction`으로 미리 삽입
+   - `updateProgressIfCompleted()` 호출되어 상태 자동 반영
+
+---
+
+### 초기화 결과 예시
+
+- `/event` 조회 시 미리 생성된 3개의 이벤트 확인 가능
+- `/event/:id/progress` 또는 `/event/:id/claim` 테스트 시, 각 유저별 진행 상태 확인 가능
+- `/event/rewards/history` 호출 시, 이미 보상 받은 이력 확인 가능
+
+---
+
+### 기타
+
+- `docker-compose up` 실행 후 자동으로 seed가 실행되도록 내부 모듈에서 `onModuleInit` 또는 CLI 명령어(`seed:run`) 등으로 구성
+- MongoDB Replica Set 초기화 안내도 함께 포함되어 있음
+
 ### 프로젝트 실행 환경
 
 Node.js: v18  
