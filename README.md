@@ -1,5 +1,7 @@
 # reword_event
 
+> RPG 이벤트 기반 보상 시스템 – NestJS 기반 MSA 아키텍처
+
 ## 🧩 설계 설명 및 구현 의도
 
 ### 1. 이벤트 및 보상 설계
@@ -76,6 +78,28 @@
 
 - `docker-compose up` 실행 후 자동으로 seed가 실행되도록 내부 모듈에서 `onModuleInit` 또는 CLI 명령어(`seed:run`) 등으로 구성
 - MongoDB Replica Set 초기화 안내도 함께 포함되어 있음
+
+## 🧠 설계 시 고려한 점 요약
+
+### 1. 유연한 이벤트 타입 확장
+
+- 조건 기반으로 다양한 이벤트를 처리할 수 있어야 했기 때문에 switch-case 기반의 메타데이터 조건 분기 구조를 설계함
+
+### 2. 인증과 책임 분리
+
+- 인증은 Gateway, 비즈니스는 내부 서비스로 나누어 개발하며 역할과 책임을 명확히 나눔
+
+### 3. 유저 행동 기반 실시간 이벤트 상태 전이
+
+- 단순 기록이 아닌 행동과 이벤트 조건이 일치하는 경우에만 상태를 `COMPLETED`로 자동 전이되도록 설계
+
+### 4. 초기화 자동화 및 채점 편의성
+
+- docker-compose 실행 후 바로 테스트할 수 있도록 유저/이벤트/보상/행동 로그 자동 삽입
+
+### 5. 트랜잭션 기반 데이터 무결성 보장
+
+- MongoDB는 기본적으로 트랜잭션을 지원하지 않기 때문에 Replica Set 환경을 구성하고 NestJS 세션으로 감싸 트랜잭션 처리
 
 ### 프로젝트 실행 환경
 
@@ -265,12 +289,48 @@ mongodb://mongodb:27017/<database>?replicaSet=rs0
 
 ---
 
-## 📂 서버뱔 문서
+## 📂 서버별 문서
 
 - 🔐 [Auth 서버 README](./auth/README.md)
 - 🎯 [Event 서버 README](./event/README.md)
 - 🛡️ [Gateway 서버 README](./gateway/README.md)
 
+## 🧪 Postman 테스트 시나리오
+
+### ✅ [1] 로그인
+
+**POST** `/auth/login`
+
+```json
+{
+  "email": "user1@example.com",
+  "password": "user1234"
+}
 ```
 
+### ✅ [2] 이벤트 목록 조회
+
+**GET** `/event`
+
+### ✅ [3] 유저 행동 기록
+
+**POST** `/event/action`
+
+```json
+{
+  "actionType": "BOSS_KILL",
+  "metadata": { "bossId": "dragon_lord" }
+}
 ```
+
+### ✅ [4] 특정 이벤트 참여 상태 확인
+
+**GET** `/event/<eventId>/progress`
+
+### ✅ [5] 보상 지급 요청
+
+**POST** `/event/<eventId>/claim`
+
+### ✅ [6] 보상 이력 조회
+
+**GET** `/event/rewards/history?startDate=Date&endDate=Date`
