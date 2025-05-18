@@ -2,6 +2,7 @@ import mongoose, { Types } from 'mongoose';
 import { EventType } from 'src/event/common/event-type.enum';
 import { ProgressStatus } from 'src/event/common/progress-status-type.enum';
 import { RewardType } from 'src/event/dto/create-reward.dto';
+import { EventRewardMappingSchema } from 'src/event/schema/event-reward-mapping.schema';
 import { EventSchema } from 'src/event/schema/event.schema';
 import { RewardSchema } from 'src/event/schema/reward.schema';
 import { UserActionLogSchema } from 'src/event/schema/user-action-log.schema';
@@ -19,10 +20,14 @@ async function seed() {
     'UserEventProgress',
     UserEventProgressSchema,
   );
+  const EventRewardMappingModel = mongoose.model(
+    'EventRewardMapping',
+    EventRewardMappingSchema,
+  );
   const userIds = {
-    user1: new Types.ObjectId('664000000000000000000011'),
-    user2: new Types.ObjectId('664000000000000000000012'),
-    user3: new Types.ObjectId('664000000000000000000013'),
+    user1: new Types.ObjectId('664000000000000000000065'),
+    user2: new Types.ObjectId('664000000000000000000066'),
+    user3: new Types.ObjectId('664000000000000000000064'),
   };
   const now = new Date();
   const twentyDaysLater = new Date(now.getTime() + 20 * 24 * 60 * 60 * 1000);
@@ -109,7 +114,35 @@ async function seed() {
       await EventModel.create(event);
     }
   }
+  // 이벤트 보상 매핑테이블
+  const eventRewardMappings = [
+    {
+      eventId: new Types.ObjectId('666000000000000000000001'),
+      rewardId: new Types.ObjectId('665000000000000000000001'),
+      isDeleted: false,
+    },
+    {
+      eventId: new Types.ObjectId('666000000000000000000002'),
+      rewardId: new Types.ObjectId('665000000000000000000002'),
+      isDeleted: false,
+    },
+    {
+      eventId: new Types.ObjectId('666000000000000000000003'),
+      rewardId: new Types.ObjectId('665000000000000000000003'),
+      isDeleted: false,
+    },
+  ];
 
+  for (const mapping of eventRewardMappings) {
+    const exists = await EventRewardMappingModel.exists({
+      eventId: mapping.eventId,
+      rewardId: mapping.rewardId,
+      isDeleted: false,
+    });
+    if (!exists) {
+      await EventRewardMappingModel.create(mapping);
+    }
+  }
   // 3. 유저 행동 로그 삽입
   await ActionLogModel.insertMany([
     {

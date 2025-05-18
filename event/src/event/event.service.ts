@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
-import mongoose, { Model, Connection, Types } from 'mongoose';
+import mongoose, { Model, Connection, Types, isValidObjectId } from 'mongoose';
 
 import { InjectConnection } from '@nestjs/mongoose';
 import { EventDocument } from './schema/event.schema';
@@ -342,7 +342,6 @@ export class EventService {
   }
 
   async claimReward(userId: string, eventId: string) {
-    console.log('🔥 claimReward called with', typeof userId, typeof eventId);
     try {
       const event = await this.eventModel.findOne({
         _id: eventId,
@@ -360,6 +359,7 @@ export class EventService {
       if (progress && progress.rewardClaimedAt) {
         throw new BadRequestException('이미 보상을 지급받은 이벤트입니다.');
       }
+
       if (
         !progress ||
         (progress.progressStatus as ProgressStatus) !== ProgressStatus.COMPLETED
@@ -410,12 +410,13 @@ export class EventService {
         message: '보상이 성공적으로 지급되었습니다.',
       };
     } catch (error) {
-      console.error('🔥 claimReward 내부 에러:', error);
       throw new InternalServerErrorException(error.message);
     }
   }
-
   toObjectId = (id: string | Types.ObjectId): Types.ObjectId => {
-    return typeof id === 'string' ? new Types.ObjectId(id) : id;
+    if (typeof id === 'string' && isValidObjectId(id)) {
+      return new Types.ObjectId(id);
+    }
+    return id as Types.ObjectId;
   };
 }
