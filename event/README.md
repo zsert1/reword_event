@@ -344,6 +344,143 @@
 }
 ```
 
+## ✅ 유저 행동 기록 (액션 로그)
+
+- **URL**: `POST http://localhost:3002/event/log-action`
+- **인증 필요**: ✅ Yes (Gateway 통해 x-user-id 전달)
+- **Body:**:
+
+  ```json
+  {
+    "actionType": "DUNGEON_CLEAR",
+    "metadata": {
+      "dungeonLevel": 5
+    },
+    "occurredAt": "2025-05-18T10:30:00Z" // optional, 생략 시 현재 시간
+  }
+  ```
+
+  ### 성공 응답 (200 OK):
+
+  ```json
+  {
+    "message": "유저 행동이 기록되었습니다."
+  }
+  ```
+
+## ✅ 보상 수령 (Claim Reward)
+
+- **URL**: `POST http://localhost:3002/event/:id/claim`
+- **인증 필요**: ✅ Yes (Gateway 통해 x-user-id 전달)
+- **Path Parameter:**:
+
+  - id: 보상 수령을 시도할 이벤트 ID
+
+  ### 성공 응답 (200 OK):
+
+  ```json
+  {
+    "status": "SUCCESS",
+    "message": "보상이 성공적으로 지급되었습니다.",
+    "rewards": [
+      {
+        "rewardType": "COUPON",
+        "value": "GOLD_COIN",
+        "quantity": 1,
+        "description": "던전 클리어 쿠폰"
+      }
+    ]
+  }
+  ```
+
+  ### 실패 응답 (400 / 404 / 500):
+
+  ```json
+  {
+    "statusCode": 400,
+    "message": "이미 보상을 지급받은 이벤트입니다.",
+    "from": "event-service"
+  }
+  ```
+
+## ✅ 보상 이력 조회 (본인)
+
+- **URL**: `GET http://localhost:3002/event/reward/history?startDate=2025-05-01&endDate=2025-05-18`
+- **인증 필요**: ✅ Yes (USER 권한, Gateway 통해 x-user-id 전달)
+- **Query Parameters**:
+  - startDate: 시작일 (YYYY-MM-DD)
+  - endDate: 종료일 (YYYY-MM-DD)
+
+### 성공 응답 (200 OK):
+
+```json
+[
+  {
+    "eventId": "666000000000000000000003",
+    "eventType": "DUNGEON_CLEAR",
+    "rewards": [
+      {
+        "rewardType": "COUPON",
+        "value": "50",
+        "quantity": 1,
+        "description": "던전 클리어 시 50% 쿠폰"
+      }
+    ],
+    "claimedAt": "2025-05-18T10:45:44.274Z"
+  }
+]
+```
+
+## ✅ 보상 이력 조회 (관리자)
+
+- **URL**: `GET http://localhost:3002/event/reward/history/:userId?startDate=2025-05-01&endDate=2025-05-18`
+- **인증 필요**:✅ Yes (ADMIN,OPERATOR,AUDITOR 권한, Gateway에서만 호출 가능)
+- **Path Parameter**:
+  - userId: 보상 이력을 조회할 유저의 ObjectId
+- **Query Parameters**:
+  - startDate: 시작일 (YYYY-MM-DD)
+  - endDate: 종료일 (YYYY-MM-DD)
+
+### 성공 응답 (200 OK):
+
+```json
+[
+  {
+    "eventId": "666000000000000000000003",
+    "eventType": "DUNGEON_CLEAR",
+    "rewards": [
+      {
+        "rewardType": "COUPON",
+        "value": "50",
+        "quantity": 1,
+        "description": "던전 클리어 시 50% 쿠폰"
+      }
+    ],
+    "claimedAt": "2025-05-18T10:45:44.274Z"
+  }
+]
+```
+
+## ✅ 보상 이력 조회 (관리자)
+
+- **URL**: `GET http://localhost:3002/event/:eventId/progress`
+- **인증 필요**:✅ ✅ Yes (Gateway에서 x-user-id 전달)
+- **Path Parameter**:
+  - userId: 보상 이력을 조회할 유저의 ObjectId
+- **Path Param**:
+  - eventId: 조회할 이벤트 ID
+
+### 성공 응답 (200 OK):
+
+```json
+{
+  "eventId": "665abc...",
+  "progressStatus": "COMPLETED",
+  "completedAt": "2025-05-17T12:00:00.000Z",
+  "rewardClaimedAt": null
+}
+```
+
 ## 🧪 Postman 테스트 안내(보상 수령 관련테스트)
 
 ❗ Gateway를 통해서만 테스트 가능
@@ -358,3 +495,10 @@
 2. Authorization: Bearer <JWT> 헤더 설정
 
 3. /event/:id/claim으로 POST 요청 보내기
+
+보상 수령 관련 주의 사항
+Gateway를 통해서만 호출 가능
+
+직접 Event 서버 요청 시 인증 미적용 → 실패
+
+반드시 Authorization: Bearer <JWT> + x-user-id 헤더 포함 필요

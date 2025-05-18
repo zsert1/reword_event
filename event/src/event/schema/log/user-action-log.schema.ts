@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { EventType } from '../common/event-type.enum';
+import { EventType } from '../../common/event-type.enum';
 
 export type UserActionLogDocument = UserActionLog & Document;
 

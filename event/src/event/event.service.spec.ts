@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EventService } from './event.service';
 import { getModelToken, getConnectionToken } from '@nestjs/mongoose';
-import { Event } from './schema/event.schema';
-import { Reward } from './schema/reward.schema';
-import { EventRewardMapping } from './schema/event-reward-mapping.schema';
-import { EventAdminLog } from './schema/event-admin-log.schema';
-import { RewardAdminLog } from './schema/reward-admin-log.schema';
+import { Event } from './schema/event/event.schema';
+import { Reward } from './schema/reward/reward.schema';
+import { EventRewardMapping } from './schema/mapping/event-reward-mapping.schema';
+import { EventAdminLog } from './schema/event/event-admin-log.schema';
+import { RewardAdminLog } from './schema/log/reward-admin-log.schema';
 
 describe('EventService', () => {
   let service: EventService;

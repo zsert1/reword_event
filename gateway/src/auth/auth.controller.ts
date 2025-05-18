@@ -10,6 +10,8 @@ import {
   Request,
   HttpStatus,
   UseGuards,
+  InternalServerErrorException,
+  Query,
 } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
@@ -92,5 +94,22 @@ export class AuthController {
     });
     const response = await firstValueFrom(response$);
     return { statusCode: HttpStatus.OK, data: response.data };
+  }
+
+  @UseGuards(AuthGuard('jwt'), RoleGuard)
+  @Role('ADMIN')
+  @Get('users')
+  async getUsersByRole(
+    @Query('role') role: string,
+  ): Promise<{ _id: string; username: string; role: string }[]> {
+    try {
+      const { data } = await firstValueFrom(
+        this.httpService.get(`http://auth:3001/auth/users?role=${role}`),
+      );
+      return data;
+    } catch (error) {
+      console.error(`❌ ${role} 유저 목록 조회 실패:`, error.message);
+      throw new InternalServerErrorException('유저 목록 조회 실패');
+    }
   }
 }

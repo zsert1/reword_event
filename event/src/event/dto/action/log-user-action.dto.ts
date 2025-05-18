@@ -1,5 +1,5 @@
 import { IsEnum, IsOptional, IsObject } from 'class-validator';
-import { EventType } from '../common/event-type.enum';
+import { EventType } from '../../common/event-type.enum';
 
 export class LogUserActionDto {
   @IsEnum(EventType)

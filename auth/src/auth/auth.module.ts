@@ -12,7 +12,7 @@ import {
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://mongodb:27017/auth_db'),
+    MongooseModule.forRoot('mongodb://mongodb:27017/auth_db?replicaSet=rs0'),
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: LoginHistory.name, schema: LoginHistorySchema },

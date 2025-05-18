@@ -1,12 +1,12 @@
 import mongoose, { Types } from 'mongoose';
 import { EventType } from 'src/event/common/event-type.enum';
 import { ProgressStatus } from 'src/event/common/progress-status-type.enum';
-import { RewardType } from 'src/event/dto/create-reward.dto';
-import { EventRewardMappingSchema } from 'src/event/schema/event-reward-mapping.schema';
-import { EventSchema } from 'src/event/schema/event.schema';
-import { RewardSchema } from 'src/event/schema/reward.schema';
-import { UserActionLogSchema } from 'src/event/schema/user-action-log.schema';
-import { UserEventProgressSchema } from 'src/event/schema/user-event-progress.schema';
+import { RewardType } from 'src/event/dto/reward/create-reward.dto';
+import { EventRewardMappingSchema } from 'src/event/schema/mapping/event-reward-mapping.schema';
+import { EventSchema } from 'src/event/schema/event/event.schema';
+import { RewardSchema } from 'src/event/schema/reward/reward.schema';
+import { UserActionLogSchema } from 'src/event/schema/log/user-action-log.schema';
+import { UserEventProgressSchema } from 'src/event/schema/event/user-event-progress.schema';
 
 async function seed() {
   const MONGO_URI =

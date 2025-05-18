@@ -11,8 +11,8 @@ export enum RewardActionType {
 
 @Schema({ timestamps: true })
 export class RewardAdminLog {
-  @Prop({ required: true })
-  adminId: string;
+  @Prop({ type: Types.ObjectId, required: true })
+  adminId: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'Reward', required: true })
   rewardId: Types.ObjectId;

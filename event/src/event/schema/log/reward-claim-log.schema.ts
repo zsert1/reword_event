@@ -5,8 +5,8 @@ export type RewardClaimLogDocument = RewardClaimLog & Document;
 
 @Schema({ timestamps: true })
 export class RewardClaimLog {
-  @Prop({ required: true })
-  userId: string;
+  @Prop({ type: Types.ObjectId, required: true })
+  userId: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'Event', required: true })
   eventId: Types.ObjectId;

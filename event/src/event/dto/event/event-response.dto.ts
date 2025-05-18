@@ -1,4 +1,4 @@
-import { EventType } from '../common/event-type.enum';
+import { EventType } from '../../common/event-type.enum';
 
 export class EventResponseDto {
   eventId: string;

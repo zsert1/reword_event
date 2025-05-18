@@ -10,8 +10,8 @@ import {
   IsMongoId,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CreateRewardDto } from './create-reward.dto';
-import { EventType } from '../common/event-type.enum';
+import { CreateRewardDto } from '../reward/create-reward.dto';
+import { EventType } from '../../common/event-type.enum';
 
 export class CreateEventDto {
   @IsString()
@@ -50,4 +50,9 @@ export class CreateEventDto {
   @IsArray()
   @IsMongoId({ each: true })
   existingRewardIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  userIds?: string[];
 }

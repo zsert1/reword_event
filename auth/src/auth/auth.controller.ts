@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Request,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -44,5 +45,15 @@ export class AuthController {
   @Delete(':id')
   deleteUser(@Param('id') id: string) {
     return this.authService.deleteUser(id);
+  }
+
+  @Get('users/:role')
+  getUserIdsByRole(@Param('role') role: string) {
+    return this.authService.getUserIdsByRole(role);
+  }
+
+  @Get('users')
+  async getUsersByRole(@Query('role') role: string): Promise<any[]> {
+    return this.authService.getUsersByRole(role);
   }
 }

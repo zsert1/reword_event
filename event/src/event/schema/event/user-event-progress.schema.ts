@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { ProgressStatus } from '../common/progress-status-type.enum';
+import { ProgressStatus } from '../../common/progress-status-type.enum';
 
 export type UserEventProgressDocument = UserEventProgress & Document;
 

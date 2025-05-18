@@ -11,8 +11,8 @@ export enum AdminActionType {
 
 @Schema({ timestamps: true })
 export class EventAdminLog {
-  @Prop({ required: true })
-  adminId: string;
+  @Prop({ type: Types.ObjectId, required: true })
+  adminId: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'Event', required: true })
   eventId: Types.ObjectId;

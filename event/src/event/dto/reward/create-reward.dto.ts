@@ -22,4 +22,8 @@ export class CreateRewardDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  eventId?: string;
 }

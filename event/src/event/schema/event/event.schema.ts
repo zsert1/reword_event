@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { EVENT_TYPE_ENUM, EventType } from '../common/event-type.enum';
+import { EVENT_TYPE_ENUM, EventType } from '../../common/event-type.enum';
 
 @Schema({ timestamps: true })
 export class Event {

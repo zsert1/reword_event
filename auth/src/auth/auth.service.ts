@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from '../user/schemas/user.schema';
+import { Role, User, UserDocument } from '../user/schemas/user.schema';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -84,5 +84,20 @@ export class AuthService {
       username: user.username,
       role: user.role,
     };
+  }
+  async getUserIdsByRole(role: string) {
+    const users = await this.userModel
+      .find({ role: role as Role, isActive: true }, { _id: 1 })
+      .lean();
+
+    return users.map((u) => u._id.toString());
+  }
+  async getUsersByRole(role: string): Promise<any[]> {
+    return this.userModel
+      .find(
+        { role: role as Role, isActive: true },
+        { _id: 1, username: 1, role: 1 },
+      )
+      .lean();
   }
 }
